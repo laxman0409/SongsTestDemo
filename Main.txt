@@ -1,0 +1,74 @@
+import java.util.HashMap;
+
+class SongNode {
+    String song;
+    SongNode prev;
+    SongNode next;
+
+    public SongNode(String song) {
+        this.song = song;
+    }
+}
+
+class RecentlyPlayed {
+    int capacity;
+    HashMap<String, SongNode> map;
+    HashMap<String, Integer> count;
+    HashMap<String, SongNode> tail;
+    HashMap<String, SongNode> head;
+
+    public RecentlyPlayed(int capacity) {
+        this.capacity = capacity;
+        map = new HashMap<>();
+        count = new HashMap<>();
+        tail = new HashMap<>();
+        head = new HashMap<>();
+    }
+
+    public void addSong(String user, String song) {
+        if (!map.containsKey(user)) {
+            map.put(user, new SongNode(song));
+            count.put(user, 1);
+            tail.put(user, map.get(user));
+            head.put(user, map.get(user));
+        } else {
+            SongNode node = map.get(user);
+            node.prev = new SongNode(song);
+            node.prev.next = node;
+            map.put(user, node.prev);
+            count.put(user, count.get(user) + 1);
+            if (count.get(user) > capacity) {
+                SongNode toRemove = tail.get(user);
+                tail.put(user, toRemove.prev);
+                tail.get(user).next = null;
+                map.remove(toRemove.song);
+                count.put(user, count.get(user) - 1);
+            }
+        }
+    }
+
+    public void printSongs(String user) {
+        SongNode node = head.get(user);
+        while (node != null) {
+            System.out.print(node.song + " ");
+            node = node.next;
+        }
+        System.out.println();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        RecentlyPlayed store = new RecentlyPlayed(3);
+        store.addSong("user1", "S1");
+        store.addSong("user1", "S2");
+        store.addSong("user1", "S3");
+        store.printSongs("user1"); // S3 S2 S1
+        store.addSong("user1", "S4");
+        store.printSongs("user1"); // S4 S3 S2
+        store.addSong("user1", "S2");
+        store.printSongs("user1"); // S2 S4 S3
+        store.addSong("user1", "S1");
+        store.printSongs("user1"); // S1 S2 S4
+    }
+}
